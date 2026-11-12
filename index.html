@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DEAD ZONE — Zombie Survival Shooter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div id="scene"></div>
+
+  <div id="loading" role="status"><p id="loading-text">BUILDING ABANDONED CITY…</p></div>
+
+  <!-- ===================== HUD ===================== -->
+  <div id="hud" class="hidden" aria-hidden="true">
+    <div id="scope"><i></i></div>
+    <div id="vignette"></div>
+    <div id="hurt"></div>
+    <div id="hitdir"></div>
+
+    <div class="hud-box hud-tl">
+      <div class="wave" id="h-wave">PREPARE</div>
+      <div class="sub" id="h-sub">Next wave in 10s</div>
+      <div class="obj" id="h-obj">Scavenge the checkpoint</div>
+      <div class="env" id="h-env">18:40 · Clear</div>
+    </div>
+
+    <div id="boss" class="hidden">
+      <div class="label">BEHEMOTH</div>
+      <div class="track"><div id="boss-fill"></div></div>
+    </div>
+
+    <div class="hud-box hud-tr">
+      <canvas id="minimap" width="170" height="170"></canvas>
+      <div class="score-row"><b>SCORE</b><span id="h-score">0</span></div>
+      <div class="score-row"><b>CASH</b><span id="h-cash">$0</span></div>
+      <div class="score-row"><b id="h-level">LV 1</b><span></span></div>
+      <div class="xp"><div id="h-xp-fill"></div></div>
+    </div>
+
+    <div id="killfeed"></div>
+
+    <div id="crosshair"><i class="ch-l"></i><i class="ch-r"></i><i class="ch-t"></i><i class="ch-b"></i><i class="ch-dot"></i></div>
+    <div id="hitmarker"></div>
+    <div id="reload-wrap">RELOADING<div class="track"><div id="reload-fill"></div></div></div>
+    <div id="prompt"></div>
+    <div id="banner"><div id="banner-title"></div><div id="banner-sub"></div></div>
+    <div id="toasts"></div>
+
+    <div class="hud-box hud-bl">
+      <div class="bar"><span>HP</span><div class="track"><div class="fill" id="hp-fill"></div></div><strong id="hp-text">100</strong></div>
+      <div class="bar"><span>ARM</span><div class="track"><div class="fill" id="ar-fill"></div></div><strong id="ar-text">0</strong></div>
+      <div class="bar"><span>STA</span><div class="track"><div class="fill" id="st-fill"></div></div><strong></strong></div>
+      <div class="inv">
+        <span>MED [H]<strong id="inv-med">1</strong></span>
+        <span>FRAG [G]<strong id="inv-gren">2</strong></span>
+        <span>LIGHT [F]<strong id="inv-light">OFF</strong></span>
+      </div>
+    </div>
+
+    <div class="hud-box hud-br">
+      <div id="w-slots"></div>
+      <div class="w-name" id="w-name">M4A1</div>
+      <div class="w-meta"><span id="w-type">Assault Rifle</span><span id="w-level">Lv 1</span></div>
+      <div class="ammo"><span id="w-mag">30</span><span id="w-res">180</span></div>
+    </div>
+
+    <div id="perf"></div>
+    <div id="look-hint" class="hidden">Pointer lock unavailable here — move the mouse to look, push to the screen edges to turn, or use the arrow keys. Click the view to retry lock.</div>
+  </div>
+
+  <!-- ===================== MAIN MENU ===================== -->
+  <section id="screen-menu" class="screen" aria-label="Main menu">
+    <div class="menu-col">
+      <div>
+        <div class="brand-kicker">Survival Shooter · Build 0.4</div>
+        <h1 class="brand">DEAD<br /><span>ZONE</span></h1>
+        <p class="tagline">The virus took the city in nine days. You are the last soldier at Checkpoint Delta. Hold the intersection, scavenge supplies and outlast the horde.</p>
+      </div>
+      <nav class="menu-buttons" aria-label="Main">
+        <button class="mbtn primary" data-action="play">Deploy <small>Survival · Abandoned City</small></button>
+        <button class="mbtn" data-action="settings">Settings <small>Graphics · Audio · Mouse</small></button>
+        <button class="mbtn" data-action="controls">Controls <small>Rebind keys</small></button>
+        <button class="mbtn" data-action="stats">Statistics <small>Records · Achievements</small></button>
+      </nav>
+      <div class="menu-foot" id="menu-best">No runs recorded yet</div>
+    </div>
+    <aside class="briefing" aria-label="Field briefing">
+      <h2>Field briefing</h2>
+      <p>Endless waves grow stronger each round. Every fifth wave a Behemoth breaks through. Night makes the infected faster; storms and fog cut visibility.</p>
+      <ul>
+        <li>Walkers, Runners, Crawlers</li>
+        <li>Screamers summon &amp; enrage the horde</li>
+        <li>Tanks charge — keep moving</li>
+        <li>Glock 17 · M4A1 · Remington 870 · AWM</li>
+        <li>Crates, drops, shop &amp; weapon upgrades</li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- ===================== SETTINGS ===================== -->
+  <section id="screen-settings" class="screen center" aria-label="Settings">
+    <div class="panel">
+      <h2>Settings</h2>
+      <h3>Graphics</h3>
+      <div class="seg" id="set-preset" role="group" aria-label="Graphics preset">
+        <button type="button" data-preset="low">Low</button>
+        <button type="button" data-preset="medium">Medium</button>
+        <button type="button" data-preset="high">High</button>
+        <button type="button" data-preset="ultra">Ultra</button>
+      </div>
+      <p class="note" id="preset-note">Presets control shadows, shadow resolution, draw distance, dynamic lights, particles and max infected.</p>
+      <label class="field">Render scale <input id="set-scale" type="range" min="0.5" max="1" step="0.05" /><output for="set-scale"></output></label>
+      <label class="field">Field of view <input id="set-fov" type="range" min="60" max="100" step="1" /><output for="set-fov"></output></label>
+      <label class="field">FPS limit
+        <select id="set-fpslimit"><option value="0">Unlimited</option><option value="30">30</option><option value="60">60</option><option value="120">120</option></select>
+        <output></output>
+      </label>
+      <label class="check"><input id="set-weather" type="checkbox" /> Dynamic weather (rain, fog, storms)</label>
+      <label class="check"><input id="set-fps" type="checkbox" /> Show performance monitor</label>
+      <h3>Audio</h3>
+      <label class="field">Master volume <input id="set-vol" type="range" min="0" max="1" step="0.05" /><output for="set-vol"></output></label>
+      <label class="field">Music &amp; drone <input id="set-music" type="range" min="0" max="1" step="0.05" /><output for="set-music"></output></label>
+      <h3>Mouse</h3>
+      <label class="field">Sensitivity <input id="set-sens" type="range" min="0.2" max="3" step="0.05" /><output for="set-sens"></output></label>
+      <div class="row-btns"><button class="btn primary" data-action="back">Back</button></div>
+    </div>
+  </section>
+
+  <!-- ===================== CONTROLS ===================== -->
+  <section id="screen-controls" class="screen center" aria-label="Controls">
+    <div class="panel">
+      <h2>Controls</h2>
+      <p class="note">Click a key to rebind it, then press the new key. Esc cancels.</p>
+      <div class="bind-list" id="bind-list"></div>
+      <div class="row-btns"><button class="btn primary" data-action="back">Back</button><button class="btn" data-action="reset-binds">Reset defaults</button></div>
+    </div>
+  </section>
+
+  <!-- ===================== STATS ===================== -->
+  <section id="screen-stats" class="screen center" aria-label="Statistics">
+    <div class="panel">
+      <h2>Statistics</h2>
+      <div class="stats-grid" id="stats-grid"></div>
+      <h3>Achievements</h3>
+      <ul class="ach-list" id="ach-list"></ul>
+      <div class="row-btns"><button class="btn primary" data-action="back">Back</button></div>
+    </div>
+  </section>
+
+  <!-- ===================== PAUSE ===================== -->
+  <section id="screen-pause" class="screen center" aria-label="Paused">
+    <div class="panel" style="width:min(420px,100%)">
+      <h2>Paused</h2>
+      <p class="note" id="pause-stats"></p>
+      <nav class="menu-buttons">
+        <button class="mbtn primary" data-action="resume">Resume</button>
+        <button class="mbtn" data-action="settings">Settings</button>
+        <button class="mbtn" data-action="controls">Controls</button>
+        <button class="mbtn" data-action="quit">Quit to menu</button>
+      </nav>
+    </div>
+  </section>
+
+  <!-- ===================== GAME OVER ===================== -->
+  <section id="screen-over" class="screen center" aria-label="Game over">
+    <div class="panel">
+      <h2 class="over-title">YOU DIED</h2>
+      <p class="note" id="over-best"></p>
+      <div class="stats-grid" id="over-grid"></div>
+      <div class="row-btns"><button class="btn primary" data-action="retry">Deploy again</button><button class="btn" data-action="menu">Main menu</button></div>
+    </div>
+  </section>
+
+  <!-- ===================== SHOP ===================== -->
+  <div id="shop" class="hidden" role="dialog" aria-modal="true" aria-labelledby="shop-title">
+    <div class="panel">
+      <div class="shop-head"><h2 id="shop-title">Supply Shop</h2><span id="shop-cash">$0</span></div>
+      <p class="note">Wave timer is paused while you shop.</p>
+      <div id="shop-list"></div>
+      <div class="row-btns"><button class="btn primary" data-action="close-shop">Close [B]</button></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+  <script src="./js/config.js"></script>
+  <script src="./js/audio.js"></script>
+  <script src="./js/input.js"></script>
+  <script src="./js/world.js"></script>
+  <script src="./js/environment.js"></script>
+  <script src="./js/effects.js"></script>
+  <script src="./js/player.js"></script>
+  <script src="./js/weapons.js"></script>
+  <script src="./js/zombies.js"></script>
+  <script src="./js/game.js"></script>
+  <script src="./js/ui.js"></script>
+  <script src="./js/main.js"></script>
+</body>
+</html>
